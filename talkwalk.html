@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TALK/WALK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600&family=Jost:wght@200;300;400;500&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============ shared ============ */
+*{box-sizing:border-box;margin:0;padding:0}
+a{text-decoration:none;color:inherit}
+:root{
+  --lime:#C6F500; --lime-dim:rgba(198,245,0,.1);
+  --cream:#FAF8F5; --blush:#F9E3E1; --card:#FFFFFF;
+  --inkc:#3A3633; --soft:#8A837D; --faint:#C9C2BB; --rule:#E8E2DB;
+  --red:#B5524A; --red-dim:rgba(181,82,74,.1);
+  --grn:#5F7F5F; --grn-dim:rgba(95,127,95,.1);
+  --code:#23211F; --codetx:#D8D4CE;
+  --mono:'IBM Plex Mono',monospace; --grot:'Space Grotesk',sans-serif;
+  --jost:'Jost',sans-serif; --karla:'Karla',sans-serif;
+}
+body{min-height:100vh}
+body.home{background:#050505;color:#F2F2EF;font-family:var(--grot)}
+body.demo{background:var(--cream);color:var(--inkc);font-family:var(--karla);overflow:hidden}
+.view{display:none}
+.view.on{display:flex;flex-direction:column;min-height:100vh}
+
+/* ============ HOME ============ */
+.v-home{align-items:center;text-align:center}
+.h-title{font-family:var(--grot);font-weight:600;font-size:clamp(54px,11vw,128px);
+  letter-spacing:.02em;line-height:1;margin-top:48px}
+.h-title .g{color:var(--lime)}
+.h-statement{margin-top:18px;font-family:var(--grot);font-weight:500;
+  font-size:clamp(16px,2.4vw,24px);line-height:1.4;color:#F2F2EF;padding:0 20px}
+.h-statement .g{color:var(--lime)}
+.herowrap{width:min(560px,86vw);margin:36px auto 0}
+.herowrap img{width:100%;display:block}
+.h-logo{font-family:var(--mono);font-size:15px;letter-spacing:.24em;margin-top:44px}
+.h-logo span{color:var(--lime)}
+.v-home h1{margin-top:24px;font-size:clamp(24px,4vw,42px);font-weight:600;line-height:1.18;
+  max-width:700px;padding:0 20px}
+.v-home h1 .g{color:var(--lime)}
+.eyewrap{position:relative;width:min(430px,82vw);margin:34px auto 0;user-select:none}
+.eyewrap video,.eyewrap img{width:100%;display:block;border:1px solid #1E1E1E}
+.eyewrap img{display:none}
+.cover{position:absolute;left:47.4%;top:54.2%;width:9%;height:6.5%;background:#000;
+  transform:translate(-50%,-50%);display:none}
+.pupil{position:absolute;left:47.4%;top:54.2%;width:4.6%;aspect-ratio:1;
+  transform:translate(-50%,-50%);display:none;
+  background:radial-gradient(circle at 50% 50%, var(--lime) 0 60%, transparent 62%);
+  filter:drop-shadow(0 0 5px rgba(198,245,0,.7))}
+.eyewrap.fallback img,.eyewrap.fallback .cover,.eyewrap.fallback .pupil{display:block}
+.eyewrap.fallback video{display:none}
+.h-desc{margin-top:32px;padding:0 22px;max-width:560px}
+.h-desc p{font-size:14.5px;line-height:1.85;color:#8F8F8A}
+.h-desc p b{color:#F2F2EF;font-weight:500}
+.h-desc p .g{color:var(--lime)}
+.btnrow{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap;justify-content:center}
+.kbtn{display:inline-flex;align-items:center;gap:10px;border:1px solid #1E1E1E;
+  font-family:var(--mono);font-size:12px;letter-spacing:.12em;padding:13px 22px;cursor:pointer;
+  transition:border-color .2s,background .2s;color:#F2F2EF}
+.kbtn:hover{border-color:var(--lime);background:var(--lime-dim)}
+.kbtn .key{background:#161616;border:1px solid #2E2E2E;border-radius:3px;font-size:10px;
+  padding:2px 7px;color:var(--lime)}
+.kbtn.primary{background:var(--lime);color:#050505;border-color:var(--lime)}
+.kbtn.primary .key{background:rgba(0,0,0,.15);border-color:rgba(0,0,0,.25);color:#050505}
+.hints{margin-top:52px;padding:0 20px;width:100%;max-width:860px}
+.hints .tag{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--lime);
+  text-transform:uppercase;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.tile{border:1px solid #1E1E1E;padding:18px 13px 16px;background:#0A0A0A;
+  opacity:0;transform:translateY(10px);animation:tin .5s forwards}
+.tile:nth-child(1){animation-delay:.15s}.tile:nth-child(2){animation-delay:.3s}
+.tile:nth-child(3){animation-delay:.45s}.tile:nth-child(4){animation-delay:.6s}
+.tile:nth-child(5){animation-delay:.75s}.tile:nth-child(6){animation-delay:.9s}
+@keyframes tin{to{opacity:1;transform:none}}
+.tile .ic{font-family:var(--mono);font-size:14px;color:var(--lime);margin-bottom:9px}
+.tile h3{font-family:var(--mono);font-size:10px;letter-spacing:.15em;font-weight:500;
+  text-transform:uppercase;margin-bottom:6px;color:#F2F2EF}
+.tile p{font-size:11px;color:#8F8F8A;line-height:1.5}
+.recwrap{margin-top:56px;width:100%;max-width:740px;padding:0 20px}
+.recwrap .tag{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--lime);
+  text-transform:uppercase;margin-bottom:16px}
+.recwrap video{width:100%;border:1px solid #1E1E1E;display:block}
+.ytframe{position:relative;width:100%;aspect-ratio:16/9;border:1px solid #1E1E1E}
+.ytframe iframe{position:absolute;inset:0;width:100%;height:100%}
+.recph{display:none;border:1px dashed #2E2E2E;color:#4D4D49;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.12em;padding:56px 20px;text-transform:uppercase}
+.recwrap.fallback video{display:none}
+.recwrap.fallback .recph{display:block}
+.idle{margin:50px 0 0;font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+  color:#4D4D49;text-transform:uppercase}
+.idle b{color:var(--lime);font-weight:500}
+.idle::after{content:"";display:inline-block;width:7px;height:12px;background:var(--lime);
+  margin-left:9px;vertical-align:-2px;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.h-foot{width:100%;margin-top:54px;border-top:1px solid #1E1E1E;padding:20px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:#4D4D49;text-transform:uppercase}
+@media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ============ DEMO (shared cream register) ============ */
+.v-demo{--acc:var(--red);--acc-dim:var(--red-dim)}
+.v-demo.aft{--acc:var(--grn);--acc-dim:var(--grn-dim)}
+.bar{display:flex;align-items:center;justify-content:space-between;
+  padding:16px 30px;border-bottom:1px solid var(--rule)}
+.brand{font-family:var(--jost);font-weight:300;font-size:16px;letter-spacing:.34em}
+.modetag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--acc)}
+.band{background:var(--blush);height:7px}
+.pips{display:flex;gap:5px;justify-content:center;padding:12px 0 0}
+.pip{width:22px;height:2px;background:var(--rule);transition:background .3s}
+.pip.done{background:var(--acc)}
+.stage{flex:1;position:relative}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:18px;padding:24px 24px 64px;
+  opacity:0;visibility:hidden;transform:translateY(12px);
+  transition:opacity .5s,transform .5s,visibility .5s}
+.scene.active{opacity:1;visibility:visible;transform:none}
+.cat{font-family:var(--jost);font-weight:200;font-size:clamp(19px,2.8vw,30px);
+  letter-spacing:.28em;text-transform:uppercase;text-align:center}
+.cat::after{content:"";display:block;width:50px;height:1px;background:var(--inkc);margin:13px auto 0}
+.caption{max-width:500px;text-align:center;font-size:14px;line-height:1.7;color:var(--soft)}
+.caption b{color:var(--inkc);font-weight:500}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.15em;padding:6px 14px;
+  border:1px solid var(--acc);color:var(--acc);background:var(--acc-dim)}
+.feed{position:absolute;bottom:13px;left:0;right:0;text-align:center;
+  font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--faint)}
+.url{font-family:var(--mono);font-size:11.5px;color:var(--soft);letter-spacing:.04em;
+  border:1px solid var(--rule);background:var(--card);padding:10px 22px;border-radius:30px}
+.hint{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--faint);text-transform:uppercase}
+.hint::after{content:"▮";color:var(--acc);margin-left:8px;animation:blink 1.1s steps(1) infinite}
+.site{position:relative;width:min(600px,90vw);border:1px solid var(--rule);
+  background:var(--card);box-shadow:0 14px 40px rgba(58,54,51,.1);overflow:hidden}
+.snav{display:flex;align-items:center;gap:14px;padding:12px 18px;font-size:9px;
+  letter-spacing:.16em;color:var(--soft);border-bottom:1px solid var(--rule)}
+.snav b{font-family:var(--jost);font-weight:300;font-size:12px;letter-spacing:.3em;
+  color:var(--inkc);margin-right:auto}
+.sband{height:20px;background:var(--blush)}
+.shero{padding:26px 20px 6px;text-align:center}
+.outline{font-family:var(--jost);font-weight:300;font-size:clamp(16px,2.7vw,24px);
+  letter-spacing:.18em;color:transparent;-webkit-text-stroke:1px var(--soft)}
+.stag{margin-top:9px;font-size:9px;letter-spacing:.22em;color:var(--soft)}
+.rolls{display:flex;gap:7px;justify-content:center;padding:16px 16px 22px}
+.roll{width:32px;height:78px;border-radius:15px 15px 4px 4px;opacity:.92}
+.roll:nth-child(1){background:linear-gradient(#D9913F,#C77F35)}
+.roll:nth-child(2){background:linear-gradient(#E5B9B3,#D5A29B)}
+.roll:nth-child(3){background:linear-gradient(#C2766C,#A85F57)}
+.roll:nth-child(4){background:linear-gradient(#8E6E80,#7A5C6E)}
+.roll:nth-child(5){background:linear-gradient(#6F5D71,#5C4B5E)}
+.roll:nth-child(6){background:linear-gradient(#8A8E78,#737762)}
+.roll:nth-child(7){background:linear-gradient(#A9BBB3,#92A59C)}
+.roll:nth-child(8){background:linear-gradient(#BFCBC9,#A8B6B4)}
+.scanbeam{position:absolute;left:0;right:0;top:-12%;height:12%;
+  background:linear-gradient(180deg,transparent,rgba(181,82,74,.18),transparent);
+  border-bottom:1px solid rgba(181,82,74,.5);animation:beam 2.6s ease-in-out infinite}
+@keyframes beam{50%{top:100%}}
+.readout{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.stat{border:1px solid var(--rule);background:var(--card);padding:11px 16px;text-align:center;min-width:130px}
+.stat .v{font-family:var(--jost);font-weight:200;font-size:24px}
+.stat .v.bad{color:var(--acc)}
+.stat .l{font-family:var(--mono);font-size:8.5px;letter-spacing:.13em;color:var(--soft);
+  text-transform:uppercase;margin-top:3px}
+.feedlist{font-family:var(--mono);font-size:11.5px;line-height:2.4;color:var(--soft);text-align:left}
+.feedlist div{opacity:0;animation:feedin .4s forwards}
+.feedlist div:nth-child(1){animation-delay:.3s}
+.feedlist div:nth-child(2){animation-delay:1.0s}
+.feedlist div:nth-child(3){animation-delay:1.7s}
+.feedlist div:nth-child(4){animation-delay:2.4s}
+.feedlist div:nth-child(5){animation-delay:3.1s}
+.feedlist span{color:var(--inkc)}
+@keyframes feedin{to{opacity:1}}
+.scanline{width:220px;height:1px;background:var(--rule);position:relative}
+.scanline::after{content:"";position:absolute;left:0;top:-1px;height:3px;width:34px;
+  background:var(--acc);animation:scan 1.6s ease-in-out infinite alternate}
+@keyframes scan{to{left:186px}}
+svg{overflow:visible}
+.svglabel{font-family:var(--mono);font-size:9.5px;fill:var(--soft);letter-spacing:.05em}
+.bignum{font-family:var(--jost);font-weight:200;font-size:30px;fill:var(--inkc)}
+.donut-track{fill:none;stroke:var(--rule);stroke-width:9}
+.donut-val{fill:none;stroke:var(--acc);stroke-width:9;stroke-dasharray:314.2;stroke-dashoffset:314.2}
+.active .donut-val{transition:stroke-dashoffset 1.6s ease .4s}
+.sb{width:min(420px,82vw)}
+.sb .row{display:flex;height:28px;border:1px solid var(--rule);overflow:hidden;background:var(--card)}
+.sb .seg{height:100%;width:0;transition:width 1.4s ease .4s}
+.sb .legend{display:flex;justify-content:space-between;margin-top:9px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;color:var(--soft)}
+.seg.vague{background:var(--red)} .seg.qual2{background:#D9A79F}
+.seg.qual{background:#C7D6C7} .seg.spec{background:var(--grn)} .seg.spec2{background:#B9CDB9}
+.certs{display:flex;flex-direction:column;gap:10px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.04em;color:var(--soft)}
+.certs .row{display:grid;grid-template-columns:150px 64px 100px;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--faint);justify-self:center}
+.dot.full{background:var(--inkc);border-color:var(--inkc)}
+.dot.miss{border-color:var(--red)}
+.dot.link{background:var(--grn);border-color:var(--grn)}
+.certs .head{color:var(--faint);font-size:8.5px;letter-spacing:.13em}
+.ladder{display:flex;flex-direction:column-reverse;gap:7px}
+.rung{width:200px;height:22px;border:1px solid var(--rule);background:var(--card);
+  display:flex;align-items:center;padding:0 11px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--faint)}
+.rung.lit{background:var(--acc-dim);border-color:var(--acc);color:var(--inkc)}
+.flags{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.flag{font-family:var(--mono);font-size:10.5px;padding:8px 14px;border:1px solid var(--acc);
+  color:var(--acc);background:var(--acc-dim);opacity:0;transform:scale(.92)}
+.active .flag{animation:pop .35s forwards}
+.active .flag:nth-child(2){animation-delay:.5s}
+@keyframes pop{to{opacity:1;transform:none}}
+.okflag{font-family:var(--mono);font-size:10.5px;padding:8px 14px;border:1px solid var(--acc);
+  color:var(--acc);background:var(--acc-dim)}
+.chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;max-width:560px}
+.cnode{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;padding:8px 12px;
+  border:1px solid var(--rule);background:var(--card);color:var(--soft);
+  opacity:0;transform:translateY(6px)}
+.carrow{color:var(--faint);opacity:0}
+.active .cnode,.active .carrow{animation:nodein .4s forwards}
+.active .cnode:nth-of-type(1){animation-delay:.2s}
+.active .carrow:nth-of-type(2){animation-delay:.55s}
+.active .cnode:nth-of-type(3){animation-delay:.8s}
+.active .carrow:nth-of-type(4){animation-delay:1.15s}
+.active .cnode:nth-of-type(5){animation-delay:1.4s}
+.active .carrow:nth-of-type(6){animation-delay:1.75s}
+.active .cnode:nth-of-type(7){animation-delay:2.0s}
+.active .carrow:nth-of-type(8){animation-delay:2.35s}
+.active .cnode:nth-of-type(9){animation-delay:2.6s;border-color:var(--acc);color:var(--acc)}
+@keyframes nodein{to{opacity:1;transform:none}}
+.radar-axis{stroke:var(--rule);stroke-width:1;fill:none}
+.radar-ghost{fill:rgba(181,82,74,.08);stroke:var(--red);stroke-width:1;stroke-dasharray:4 4}
+.radar-shape{fill:var(--acc-dim);stroke:var(--acc);stroke-width:1.5;
+  opacity:0;transform-origin:center;transform:scale(.4)}
+.active .radar-shape{transition:opacity 1.2s ease .4s,transform 1.2s ease .4s;opacity:1;transform:scale(1)}
+.radar-lab{font-family:var(--mono);font-size:8px;fill:var(--soft);letter-spacing:.03em}
+.vscore{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--soft)}
+.vword{font-family:var(--jost);font-weight:200;font-size:clamp(28px,5vw,50px);
+  letter-spacing:.26em;text-transform:uppercase;color:var(--acc);text-align:center}
+.vline{max-width:470px;text-align:center;font-size:14px;line-height:1.7;color:var(--soft)}
+.vline b{color:var(--inkc)}
+.vbtns{display:flex;gap:12px}
+.vbtn{font-family:var(--mono);font-size:10px;letter-spacing:.14em;padding:10px 18px;
+  border:1px solid var(--inkc);color:var(--inkc);cursor:pointer;background:transparent}
+.vbtn:hover{background:var(--inkc);color:var(--cream)}
+.pill{display:flex;border:1px solid var(--rule);border-radius:30px;overflow:hidden;
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;background:var(--card)}
+.opt{padding:9px 22px;color:var(--soft);cursor:pointer;transition:background .2s,color .2s}
+.opt.on{background:var(--inkc);color:var(--cream)}
+.viewbox{width:min(620px,92vw)}
+.tview{display:none}
+.tview.on{display:block;animation:vfade .35s}
+@keyframes vfade{from{opacity:0;transform:translateY(6px)}}
+.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:14px 16px 18px}
+.badge{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.08em;color:var(--inkc);border:1px solid var(--grn);
+  background:var(--grn-dim);padding:7px 12px}
+.badge i{font-style:normal;color:var(--grn)}
+.humannote{padding:0 18px 16px;text-align:center;font-size:11px;color:var(--soft)}
+.codecard{background:var(--code);color:var(--codetx);font-family:var(--mono);
+  font-size:10px;line-height:1.7;padding:16px 18px;overflow-x:auto;border:1px solid var(--rule)}
+.codecard .k{color:#A8C686}.codecard .s{color:#E0B089}.codecard .ok{color:#9ED49E}
+.reslog{margin-top:9px;border:1px solid var(--grn);background:var(--grn-dim);
+  font-family:var(--mono);font-size:9.5px;line-height:2;padding:11px 15px;color:var(--inkc)}
+.reslog b{color:var(--grn)}
+.endcard{max-width:520px;text-align:center;font-size:11.5px;line-height:1.7;
+  font-family:var(--mono);letter-spacing:.02em;color:var(--inkc);
+  border:1px solid var(--acc);background:var(--acc-dim);padding:12px 17px}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01s !important;transition-duration:.01s !important}
+}
+</style>
+</head>
+<body class="home">
+
+<!-- ==================== HOME ==================== -->
+<div class="view v-home on" id="view-home">
+  <h1 class="h-title">TALK<span class="g">/</span>WALK</h1>
+  <p class="h-statement">AI agents are the web's <span class="g">new readers.</span><br>
+  They read data, not design.</p>
+
+  <div class="herowrap">
+    <img src="hero.jpg" alt="network of connected claims read by machines">
+  </div>
+
+  <div class="h-desc">
+    <p><b>Talk/Walk</b> makes a small brand's sustainability claims
+    readable, and <span class="g">verifiable</span>, by machines.</p>
+    <p>Case: <b>Ink &amp; Spindle</b>, a hand-printing textile studio in Melbourne.</p>
+  </div>
+
+  <div class="btnrow">
+    <a class="kbtn" href="#before">SCAN · BEFORE <span class="key">1</span></a>
+    <a class="kbtn primary" href="#after">SCAN · AFTER <span class="key">2</span></a>
+  </div>
+
+  <div class="hints">
+    <div class="tag">The read checks six things</div>
+    <div class="grid">
+      <div class="tile"><div class="ic">{ }</div><h3>Data layer</h3><p>Anything structured to read?</p></div>
+      <div class="tile"><div class="ic">◳</div><h3>Specificity</h3><p>Can each claim be tested?</p></div>
+      <div class="tile"><div class="ic">✓</div><h3>Certifications</h3><p>Do they resolve to a registry?</p></div>
+      <div class="tile"><div class="ic">%</div><h3>Numbers</h3><p>Are the figures stated?</p></div>
+      <div class="tile"><div class="ic">⇢</div><h3>Provenance</h3><p>Does the trail reach the source?</p></div>
+      <div class="tile"><div class="ic">⚑</div><h3>Red flags</h3><p>What gets discounted?</p></div>
+    </div>
+  </div>
+
+  <div class="recwrap" id="recwrap">
+    <div class="tag">The second brain · the method</div>
+    <video id="brainvid" autoplay muted loop playsinline controls>
+      <source src="secondbrain.mp4" type="video/mp4">
+    </video>
+    <div class="recph">add secondbrain.mp4 to this folder to show the recording</div>
+  </div>
+
+  <div class="idle">Tap a fabric label to begin · <b>1 before</b> · <b>2 after</b></div>
+  <div class="h-foot">Talk/Walk · case: Ink &amp; Spindle, Abbotsford · design research compendium · RMIT MDIT 2026</div>
+</div>
+
+<!-- ==================== BEFORE ==================== -->
+<div class="view v-demo bef" id="view-before">
+  <div class="bar">
+    <div class="brand">INK &amp; SPINDLE</div>
+    <div class="modetag">AGENT READ · BEFORE</div>
+  </div>
+  <div class="band"></div>
+  <div class="pips"></div>
+  <div class="stage">
+
+    <section class="scene active">
+      <div class="cat">The Cold Read</div>
+      <div class="url">agent.read( inkandspindle.com.au )</div>
+      <p class="caption">An AI agent reads this brand's real website,<br>the way it will in a purchase flow.</p>
+      <div class="hint">tap to begin</div>
+    </section>
+
+    <section class="scene">
+      <div class="site">
+        <div class="snav"><b>INK &amp; SPINDLE</b><span>SHOP</span><span>ENVIRONMENT</span><span>FAQ</span></div>
+        <div class="sband"></div>
+        <div class="shero">
+          <div class="outline">OUR SUSTAINABLE TEXTILES</div>
+          <div class="stag">WE MAKE TEXTILES THAT CONSIDER THE HEALTH OF OUR ENVIRONMENT</div>
+        </div>
+        <div class="rolls"><div class="roll"></div><div class="roll"></div><div class="roll"></div><div class="roll"></div><div class="roll"></div><div class="roll"></div><div class="roll"></div><div class="roll"></div></div>
+        <div class="scanbeam"></div>
+      </div>
+      <div class="readout">
+        <div class="stat"><div class="v" id="vis">0%</div><div class="l">visibility to agents</div></div>
+        <div class="stat"><div class="v">6</div><div class="l">claims detected</div></div>
+        <div class="stat"><div class="v bad">0</div><div class="l">claims confirmed</div></div>
+      </div>
+      <p class="caption">The agent can read the page. <b>Reading is not verifying.</b></p>
+    </section>
+
+    <section class="scene">
+      <div class="cat" style="font-size:clamp(17px,2.4vw,24px)">Checking</div>
+      <div class="scanline"></div>
+      <div class="feedlist">
+        <div>→ text extracted: <span>6 sustainability claims</span></div>
+        <div>→ loading <span>schema.org</span> vocabulary</div>
+        <div>→ loading <span>ISO 14021 · AANA 2025</span> clauses</div>
+        <div>→ querying <span>GOTS · OEKO-TEX registries</span></div>
+        <div>→ searching for a <span>structured data layer…</span></div>
+      </div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Structured Data</div>
+      <svg width="146" height="146" viewBox="0 0 120 120">
+        <circle class="donut-track" cx="60" cy="60" r="50"/>
+        <circle class="donut-val" cx="60" cy="60" r="50" transform="rotate(-90 60 60)" data-off="314.2"/>
+        <text class="bignum" x="60" y="58" text-anchor="middle">0</text>
+        <text class="svglabel" x="60" y="76" text-anchor="middle">structured types</text>
+      </svg>
+      <p class="caption">The words are readable. But there is <b>no data layer to check them against.</b></p>
+      <div class="chip">PROSE ONLY · NO JSON-LD</div>
+      <div class="feed">looked for: schema.org/Product · Organization · Certification</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Claim Specificity</div>
+      <div class="sb">
+        <div class="row">
+          <div class="seg vague" data-w="50%"></div>
+          <div class="seg qual2" data-w="33%"></div>
+          <div class="seg spec2" data-w="17%"></div>
+        </div>
+        <div class="legend"><span>BROAD 50%</span><span>QUALIFIED 33%</span><span>SPECIFIC 17%</span></div>
+      </div>
+      <p class="caption">"Sustainable" is readable as text. <b>Half the claims are too broad to test.</b></p>
+      <div class="chip">READABLE · HARD TO TEST</div>
+      <div class="feed">consulting: ISO 14021 Cl. 6.6 · AANA Practice Note</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Certification Signals</div>
+      <div class="certs">
+        <div class="row head"><span></span><span style="justify-self:center">NAMED</span><span style="justify-self:center">RESOLVABLE</span></div>
+        <div class="row"><span>GOTS</span><span class="dot full"></span><span class="dot miss"></span></div>
+        <div class="row"><span>OEKO-TEX 100 · IV</span><span class="dot full"></span><span class="dot miss"></span></div>
+        <div class="row"><span>BELGIAN LINEN</span><span class="dot full"></span><span class="dot miss"></span></div>
+        <div class="row"><span>CARBON NEUTRAL</span><span class="dot full"></span><span class="dot miss"></span></div>
+      </div>
+      <p class="caption">Public registries exist for these. With <b>no licence number or link on the page,</b> the agent cannot resolve them.</p>
+      <div class="chip">4 NAMED · 0 RESOLVABLE</div>
+      <div class="feed">registries available: global-standard.org · oeko-tex.com/label-check</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Quantification</div>
+      <svg width="146" height="146" viewBox="0 0 120 120">
+        <circle class="donut-track" cx="60" cy="60" r="50"/>
+        <circle class="donut-val" cx="60" cy="60" r="50" transform="rotate(-90 60 60)" data-off="210.5"/>
+        <text class="bignum" x="60" y="58" text-anchor="middle">33%</text>
+        <text class="svglabel" x="60" y="76" text-anchor="middle">claims carry numbers</text>
+      </svg>
+      <p class="caption">Two claims carry real figures. <b>The rest cannot be measured,</b> so the agent discounts them.</p>
+      <div class="chip">UNDER-QUANTIFIED</div>
+      <div class="feed">found: 99% offcuts · 40 t CO₂ · others unquantified</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Provenance</div>
+      <div class="ladder">
+        <div class="rung lit">ORIGIN</div>
+        <div class="rung">SUPPLIER</div>
+        <div class="rung">PRODUCTION</div>
+        <div class="rung">MATERIAL</div>
+        <div class="rung">VERIFICATION</div>
+      </div>
+      <p class="caption">The trail is told in prose, <b>not held in fields.</b> The EU Digital Product Passport will require the fields.</p>
+      <div class="chip">1 OF 5 IN STRUCTURED FORM</div>
+      <div class="feed">checked against: EU DPP data model · countryOfOrigin</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Red Flags</div>
+      <div class="flags">
+        <div class="flag">"environmentally sustainable"</div>
+        <div class="flag">"eco-linens"</div>
+      </div>
+      <p class="caption">Unscoped terms read as <b>known marketing language</b> to agents, and pull credibility down.</p>
+      <div class="chip">2 TERMS FLAGGED</div>
+      <div class="feed">consulting: ACCC enforcement precedents · AANA 2025</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Verifiability Shape</div>
+      <svg width="280" height="232" viewBox="0 0 320 250">
+        <g transform="translate(160,122)">
+          <polygon class="radar-axis" points="0,-88 76,-44 76,44 0,88 -76,44 -76,-44"/>
+          <polygon class="radar-axis" points="0,-58 50,-29 50,29 0,58 -50,29 -50,-29"/>
+          <polygon class="radar-axis" points="0,-29 25,-14 25,14 0,29 -25,14 -25,-14"/>
+          <line class="radar-axis" x1="0" y1="-88" x2="0" y2="88"/>
+          <line class="radar-axis" x1="-76" y1="-44" x2="76" y2="44"/>
+          <line class="radar-axis" x1="-76" y1="44" x2="76" y2="-44"/>
+          <polygon class="radar-shape" points="0,-9 13,-8 11,7 0,27 -10,6 -26,-15"/>
+          <text class="radar-lab" x="0" y="-97" text-anchor="middle">DATA</text>
+          <text class="radar-lab" x="84" y="-44">SPECIFICITY</text>
+          <text class="radar-lab" x="84" y="50">CERTS</text>
+          <text class="radar-lab" x="0" y="104" text-anchor="middle">NUMBERS</text>
+          <text class="radar-lab" x="-84" y="50" text-anchor="end">PROVENANCE</text>
+          <text class="radar-lab" x="-84" y="-44" text-anchor="end">FLAGS</text>
+        </g>
+      </svg>
+      <p class="caption">Six checks, one shape: <b>sparse.</b> The trust was built for the wrong reader.</p>
+    </section>
+
+    <section class="scene">
+      <div class="vscore">VERIFIABILITY · 18 / 100</div>
+      <div class="vword">Unsubstantiated</div>
+      <div class="readout">
+        <div class="stat"><div class="v">6</div><div class="l">claims readable</div></div>
+        <div class="stat"><div class="v bad">0</div><div class="l">independently verifiable</div></div>
+        <div class="stat"><div class="v bad">LOW</div><div class="l">agent confidence</div></div>
+      </div>
+      <p class="vline">The agent can read every claim.<br><b>It can confirm almost none of them.</b></p>
+      <div class="vbtns">
+        <a class="vbtn" href="#after">SEE THE AFTER →</a>
+        <a class="vbtn" href="#">HOME</a>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ==================== AFTER ==================== -->
+<div class="view v-demo aft" id="view-after">
+  <div class="bar">
+    <div class="brand">INK &amp; SPINDLE</div>
+    <div class="modetag">AGENT READ · AFTER</div>
+  </div>
+  <div class="band"></div>
+  <div class="pips"></div>
+  <div class="stage">
+
+    <section class="scene active">
+      <div class="cat">The Second Read</div>
+      <div class="url">agent.read( structured output )</div>
+      <p class="caption">The same page. The same truth.<br>This time, structured by a designer first.</p>
+      <div class="hint">tap to begin</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat" style="font-size:clamp(17px,2.4vw,24px)">The Second Brain</div>
+      <div class="chain">
+        <span class="cnode">CLAIM</span><span class="carrow">→</span>
+        <span class="cnode">PATTERN</span><span class="carrow">→</span>
+        <span class="cnode">STANDARD</span><span class="carrow">→</span>
+        <span class="cnode">EVIDENCE</span><span class="carrow">→</span>
+        <span class="cnode">SCHEMA</span>
+      </div>
+      <p class="caption">Every claim traced to its rule, its proof, and its machine-readable form. <b>Structured by hand, by a designer.</b></p>
+      <div class="feed">the method runs on the studio tablet · second brain · Obsidian</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat" style="font-size:clamp(17px,2.4vw,24px)">Re-reading</div>
+      <div class="scanline"></div>
+      <div class="feedlist">
+        <div>→ fetching <span>structured layer</span></div>
+        <div>→ parsing <span>JSON-LD · schema.org/Product</span></div>
+        <div>→ resolving <span>Certification issuer URIs</span></div>
+        <div>→ verifying against <span>public registries…</span></div>
+      </div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Structured Data</div>
+      <svg width="146" height="146" viewBox="0 0 120 120">
+        <circle class="donut-track" cx="60" cy="60" r="50"/>
+        <circle class="donut-val" cx="60" cy="60" r="50" transform="rotate(-90 60 60)" data-off="0"/>
+        <text class="bignum" x="60" y="58" text-anchor="middle">3</text>
+        <text class="svglabel" x="60" y="76" text-anchor="middle">structured types</text>
+      </svg>
+      <p class="caption"><b>Product · Organization · Certification.</b><br>Now there is data the agent can check.</p>
+      <div class="chip">JSON-LD VALID</div>
+      <div class="feed">parsed: schema.org/Product · Organization · Certification</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Claim Specificity</div>
+      <div class="sb">
+        <div class="row">
+          <div class="seg qual" data-w="17%"></div>
+          <div class="seg spec" data-w="83%"></div>
+        </div>
+        <div class="legend"><span>QUALIFIED 17%</span><span>SPECIFIC 83%</span></div>
+      </div>
+      <p class="caption">"Sustainable" now resolves to <b>named, scoped attributes</b> the agent can test one by one.</p>
+      <div class="chip">TESTABLE CLAIMS</div>
+      <div class="feed">consulting: ISO 14021 Cl. 6.6 · AANA Practice Note</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Certification Signals</div>
+      <div class="certs">
+        <div class="row head"><span></span><span style="justify-self:center">NAMED</span><span style="justify-self:center">RESOLVABLE</span></div>
+        <div class="row"><span>GOTS</span><span class="dot full"></span><span class="dot link"></span></div>
+        <div class="row"><span>OEKO-TEX 100 · IV</span><span class="dot full"></span><span class="dot link"></span></div>
+        <div class="row"><span>BELGIAN LINEN</span><span class="dot full"></span><span class="dot link"></span></div>
+        <div class="row"><span>CARBON NEUTRAL</span><span class="dot full"></span><span class="dot link"></span></div>
+      </div>
+      <p class="caption">Each certification is now a <b>typed field with an issuer URI,</b> resolvable to its public registry.</p>
+      <div class="chip">4 NAMED · 4 RESOLVABLE</div>
+      <div class="feed">resolved: global-standard.org · oeko-tex.com/label-check</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Quantification</div>
+      <svg width="146" height="146" viewBox="0 0 120 120">
+        <circle class="donut-track" cx="60" cy="60" r="50"/>
+        <circle class="donut-val" cx="60" cy="60" r="50" transform="rotate(-90 60 60)" data-off="53.4"/>
+        <text class="bignum" x="60" y="58" text-anchor="middle">83%</text>
+        <text class="svglabel" x="60" y="76" text-anchor="middle">claims carry numbers</text>
+      </svg>
+      <p class="caption"><b>99% offcuts · 40 t CO₂ · 20 km radius.</b><br>Figures the agent can hold the brand to.</p>
+      <div class="chip">MEASURABLE</div>
+      <div class="feed">consulting: brand evidence file · ISO 14021 Cl. 5.7</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Provenance</div>
+      <div class="ladder">
+        <div class="rung lit">ORIGIN</div>
+        <div class="rung lit">SUPPLIER</div>
+        <div class="rung lit">PRODUCTION</div>
+        <div class="rung lit">MATERIAL</div>
+        <div class="rung lit">VERIFICATION</div>
+      </div>
+      <p class="caption">Abbotsford studio, Belgian mill, certified fibre: <b>the full trail, held in structured fields.</b></p>
+      <div class="chip">5 OF 5 TRACEABLE</div>
+      <div class="feed">aligned: EU DPP data model · countryOfOrigin · manufacturer</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Red Flags</div>
+      <div class="okflag">NO FLAGGED TERMS</div>
+      <p class="caption">Every broad word is now <b>scoped to the attribute it describes.</b> Nothing left to discount.</p>
+      <div class="chip">0 TERMS FLAGGED</div>
+      <div class="feed">consulting: ACCC enforcement precedents · AANA 2025</div>
+    </section>
+
+    <section class="scene">
+      <div class="cat">Verifiability Shape</div>
+      <svg width="280" height="232" viewBox="0 0 320 250">
+        <g transform="translate(160,122)">
+          <polygon class="radar-axis" points="0,-88 76,-44 76,44 0,88 -76,44 -76,-44"/>
+          <polygon class="radar-axis" points="0,-58 50,-29 50,29 0,58 -50,29 -50,-29"/>
+          <polygon class="radar-axis" points="0,-29 25,-14 25,14 0,29 -25,14 -25,-14"/>
+          <line class="radar-axis" x1="0" y1="-88" x2="0" y2="88"/>
+          <line class="radar-axis" x1="-76" y1="-44" x2="76" y2="44"/>
+          <line class="radar-axis" x1="-76" y1="44" x2="76" y2="-44"/>
+          <polygon class="radar-ghost" points="0,-9 13,-8 11,7 0,27 -10,6 -26,-15"/>
+          <polygon class="radar-shape" points="0,-80 69,-40 71,41 0,73 -69,40 -63,-36"/>
+          <text class="radar-lab" x="0" y="-97" text-anchor="middle">DATA</text>
+          <text class="radar-lab" x="84" y="-44">SPECIFICITY</text>
+          <text class="radar-lab" x="84" y="50">CERTS</text>
+          <text class="radar-lab" x="0" y="104" text-anchor="middle">NUMBERS</text>
+          <text class="radar-lab" x="-84" y="50" text-anchor="end">PROVENANCE</text>
+          <text class="radar-lab" x="-84" y="-44" text-anchor="end">FLAGS</text>
+        </g>
+      </svg>
+      <p class="caption">Same six checks. <b>Same truth, new shape.</b> The before is the dotted outline.</p>
+    </section>
+
+    <section class="scene">
+      <div class="vscore">VERIFIABILITY · 92 / 100</div>
+      <div class="vword">Substantiated</div>
+      <p class="vline">The truth didn't change. <b>The design did.</b></p>
+    </section>
+
+    <section class="scene">
+      <div class="cat" style="font-size:clamp(17px,2.4vw,24px)">In Practice</div>
+      <div class="pill">
+        <div class="opt on" data-v="human">HUMAN</div>
+        <div class="opt" data-v="machine">MACHINE</div>
+      </div>
+      <div class="viewbox">
+        <div class="tview on" data-tv="human">
+          <div class="site" style="width:100%">
+            <div class="snav"><b>INK &amp; SPINDLE</b><span>SHOP</span><span>ENVIRONMENT</span><span>FAQ</span></div>
+            <div class="sband"></div>
+            <div class="shero"><div class="outline">OUR SUSTAINABLE TEXTILES</div></div>
+            <div class="badges">
+              <div class="badge"><i>✓</i> GOTS CERTIFIED</div>
+              <div class="badge"><i>✓</i> OEKO-TEX 100 · IV</div>
+              <div class="badge"><i>✓</i> BELGIAN LINEN</div>
+              <div class="badge"><i>✓</i> MADE WITHIN 20 KM</div>
+            </div>
+            <div class="humannote">The page a person sees barely changes. The trust marks are now backed by data underneath.</div>
+          </div>
+        </div>
+        <div class="tview" data-tv="machine">
+          <div class="codecard">
+{ <span class="k">"@type"</span>: <span class="s">"Product"</span>,<br>
+&nbsp;&nbsp;<span class="k">"name"</span>: <span class="s">"Ink &amp; Spindle organic cotton basecloth"</span>,<br>
+&nbsp;&nbsp;<span class="k">"countryOfOrigin"</span>: <span class="s">"AU"</span>,<br>
+&nbsp;&nbsp;<span class="k">"hasCertification"</span>: [{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">"name"</span>: <span class="s">"GOTS"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">"issuedBy"</span>: { <span class="k">"name"</span>: <span class="s">"Global Standard gGmbH"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">"url"</span>: <span class="s">"https://global-standard.org"</span> } <span class="ok">✓ resolved</span><br>
+&nbsp;&nbsp;},{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">"name"</span>: <span class="s">"OEKO-TEX STANDARD 100, Class IV"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">"issuedBy"</span>: { <span class="k">"url"</span>: <span class="s">"https://oeko-tex.com"</span> } <span class="ok">✓ resolved</span><br>
+&nbsp;&nbsp;}] }
+          </div>
+          <div class="reslog">
+            <b>✓</b> global-standard.org · certified suppliers database · ACTIVE<br>
+            <b>✓</b> oeko-tex.com/label-check · certificate VALID<br>
+            <b>✓</b> EU Digital Product Passport · data model ALIGNED
+          </div>
+        </div>
+      </div>
+      <div class="endcard">This claim is now machine-verifiable. Readable by AI agents, aligned with the EU Digital Product Passport.</div>
+      <div class="vbtns">
+        <a class="vbtn" href="#before">REPLAY THE BEFORE</a>
+        <a class="vbtn" href="#">HOME</a>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* ---------- sequencer factory ---------- */
+function makeSeq(viewEl, durs, onShow){
+  const scenes=[...viewEl.querySelectorAll('.scene')];
+  const pipsEl=viewEl.querySelector('.pips');
+  pipsEl.innerHTML='';
+  scenes.forEach(()=>{const p=document.createElement('div');p.className='pip';pipsEl.appendChild(p)});
+  const pips=[...pipsEl.children];
+  let i=0,timer=null;
+  function show(n){
+    i=n;
+    scenes.forEach((s,k)=>s.classList.toggle('active',k===n));
+    pips.forEach((p,k)=>p.classList.toggle('done',k<=n));
+    const sc=scenes[n];
+    sc.querySelectorAll('.donut-val').forEach(c=>{c.style.strokeDashoffset=c.dataset.off});
+    sc.querySelectorAll('.seg').forEach(s=>{s.style.width=s.dataset.w});
+    if(onShow) onShow(n);
+    clearTimeout(timer);
+    if(durs[n]>0) timer=setTimeout(()=>show(Math.min(n+1,scenes.length-1)),durs[n]);
+  }
+  function stop(){clearTimeout(timer)}
+  function next(){ if(i<scenes.length-1) show(i+1) }
+  viewEl.querySelector('.stage').addEventListener('click',e=>{
+    if(e.target.closest('.pill')||e.target.closest('a')||e.target.closest('button')) return;
+    next();
+  });
+  return {show,stop,next,restart:()=>show(0)};
+}
+
+/* ---------- before ---------- */
+let visTimer=null;
+function countVis(){
+  let v=0; const el=document.getElementById('vis');
+  clearInterval(visTimer);
+  visTimer=setInterval(()=>{ v+=2; if(v>=34){v=34;clearInterval(visTimer)} el.textContent=v+'%'; },70);
+}
+const seqBefore=makeSeq(
+  document.getElementById('view-before'),
+  [0,7200,5400,5400,5400,6000,5400,5600,5200,5400,0],
+  n=>{ if(n===1) countVis(); }
+);
+
+/* ---------- after ---------- */
+const seqAfter=makeSeq(
+  document.getElementById('view-after'),
+  [0,5600,5200,5400,5400,6000,5400,5400,5200,5600,4200,0]
+);
+
+/* human/machine toggle */
+document.querySelectorAll('.pill').forEach(pill=>{
+  pill.addEventListener('click',e=>{
+    const opt=e.target.closest('.opt'); if(!opt) return;
+    const box=pill.parentElement;
+    pill.querySelectorAll('.opt').forEach(o=>o.classList.toggle('on',o===opt));
+    box.querySelectorAll('.tview').forEach(v=>v.classList.toggle('on',v.dataset.tv===opt.dataset.v));
+  });
+});
+
+/* ---------- hash router ---------- */
+const views={home:document.getElementById('view-home'),
+             before:document.getElementById('view-before'),
+             after:document.getElementById('view-after')};
+let activeSeq=null;
+function route(){
+  const h=(location.hash||'').replace('#','');
+  const name=(h==='before'||h==='after')?h:'home';
+  Object.entries(views).forEach(([k,v])=>v.classList.toggle('on',k===name));
+  document.body.className=(name==='home')?'home':'demo';
+  if(activeSeq) activeSeq.stop();
+  clearInterval(visTimer);
+  if(name==='before'){activeSeq=seqBefore;seqBefore.restart()}
+  else if(name==='after'){activeSeq=seqAfter;seqAfter.restart()}
+  else activeSeq=null;
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+
+/* ---------- keyboard (NFC fallback) ---------- */
+document.addEventListener('keydown',e=>{
+  if(e.key==='1') location.hash='before';
+  if(e.key==='2') location.hash='after';
+  if(e.key==='h'||e.key==='H') location.hash='';
+  if((e.key==='r'||e.key==='R')&&activeSeq) activeSeq.restart();
+  if((e.key===' '||e.key==='Enter')&&activeSeq) activeSeq.next();
+});
+
+
+/* ---------- second brain: local video, show placeholder if missing ---------- */
+const brainvid=document.getElementById('brainvid');
+if(brainvid){
+  const src=brainvid.querySelector('source');
+  if(src) src.addEventListener('error',()=>document.getElementById('recwrap').classList.add('fallback'));
+}
+
+route();
+</script>
+</body>
+</html>
